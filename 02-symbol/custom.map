@@ -58,11 +58,13 @@ LOAD start.o
 LOAD main.o
 OUTPUT(custom.elf elf64-x86-64)
 
-.comment        0x0000000000000000       0x2d
- .comment       0x0000000000000000       0x2d main.o
-                                         0x2e (size before relaxing)
-
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
+                0x0000000000000000        0x0 start.o
+ .note.GNU-stack
                 0x0000000000000000        0x0 main.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)

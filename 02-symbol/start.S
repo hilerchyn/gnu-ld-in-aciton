@@ -9,3 +9,5 @@ _start:
     mov $60, %eax
 
     syscall
+
+.section .note.GNU-stack,"",@progbits

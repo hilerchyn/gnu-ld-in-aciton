@@ -1230,3 +1230,934 @@ SIZEOF()
 
 这一节之后，GNU `ld` 就会从“会写几个 `SECTIONS`”升级到真正理解**裸机程序内存布局**。
 
+
+
+
+## 问题补充
+
+
+```
+实验02 ：  
+ld 
+     -T linker.ld 
+     start.o 
+     main.o 
+     -o custom.elf 
+     -Map=custom.map 
+
+
+ld: warning: start.o: missing .note.GNU-stack section implies executable stack 
+ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker 
+ld: warning: custom.elf has a LOAD segment with RWX permissions
+```
+
+这个现象非常好，**实验 02 正好碰到了 GNU `ld` 实际使用中两个非常重要的问题**。
+
+你的链接其实已经成功了：
+
+```text
+custom.elf
+custom.map
+```
+
+只是 `ld` 给出了两个 warning。我们逐个解决，而且这两个 warning 背后分别对应：
+
+1. **`.note.GNU-stack`：汇编文件的栈权限标记**
+2. **RWX LOAD segment：ELF Segment 的权限布局**
+
+这恰好可以把我们下一阶段的 `Section → Segment` 知识提前引出来。
+
+---
+
+# 1. 第一个 warning
+
+你看到：
+
+```text
+ld: warning: start.o: missing .note.GNU-stack section implies executable stack
+ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker
+```
+
+关键是：
+
+```text
+missing .note.GNU-stack
+```
+
+意思是：
+
+> `start.S` 没有告诉 linker：“这个目标文件不需要可执行栈”。
+
+---
+
+# 2. 为什么一个 `.S` 文件会影响栈？
+
+你现在的 `start.S`：
+
+```asm
+.global _start
+
+_start:
+
+    call main
+
+    mov %eax, %edi
+
+    mov $60, %eax
+
+    syscall
+```
+
+代码本身没有问题。
+
+但是 GNU assembler 还允许我们给 object file 添加一个特殊 Section：
+
+```text
+.note.GNU-stack
+```
+
+它不是实际运行时的栈。
+
+名字很容易误导。
+
+它实际上是一个：
+
+> **“这个目标文件是否要求可执行栈”的标记。**
+
+---
+
+# 3. 给 start.S 加上 `.note.GNU-stack`
+
+修改成：
+
+```asm
+.global _start
+
+_start:
+
+    call main
+
+    mov %eax, %edi
+
+    mov $60, %eax
+
+    syscall
+
+
+.section .note.GNU-stack,"",@progbits
+```
+
+最后这一行：
+
+```asm
+.section .note.GNU-stack,"",@progbits
+```
+
+非常关键。
+
+可以拆成：
+
+```text
+.section
+    │
+    ▼
+创建 Section
+
+.note.GNU-stack
+    │
+    ▼
+GNU Stack 标记
+
+""
+    │
+    ▼
+没有 SHF_EXECINSTR 权限
+
+@progbits
+    │
+    ▼
+普通 ELF section 类型
+```
+
+---
+
+# 4. 重新编译
+
+```bash
+gcc -c start.S -o start.o
+```
+
+然后：
+
+```bash
+readelf -S start.o
+```
+
+应该能够看到：
+
+```text
+.note.GNU-stack
+```
+
+更重要的是，它应该**没有 executable flag**。
+
+可以用：
+
+```bash
+readelf -SW start.o
+```
+
+观察 Flags。
+
+---
+
+# 5. 为什么 `ld` 原来认为 Stack 可以执行？
+
+因为：
+
+```text
+start.o
+    │
+    ├── .text
+    │
+    └── 没有 .note.GNU-stack
+             │
+             ▼
+       linker 无法确认
+             │
+             ▼
+     按 executable stack 处理
+```
+
+因此：
+
+```text
+没有 .note.GNU-stack
+        ↓
+可能需要 executable stack
+```
+
+而现在：
+
+```text
+.note.GNU-stack
+        ↓
+明确声明不需要执行栈
+        ↓
+NX / non-executable stack
+```
+
+---
+
+# 6. 第二个 warning
+
+现在来看更有意思的：
+
+```text
+ld: warning: custom.elf has a LOAD segment with RWX permissions
+```
+
+这里最重要的是：
+
+# `LOAD segment`
+
+注意：
+
+我们前面一直学习的是：
+
+```text
+Section
+```
+
+但是这里突然出现：
+
+```text
+Segment
+```
+
+这正是 ELF 中非常重要的：
+
+# Section ≠ Segment
+
+---
+
+# 7. 先看你的 ELF
+
+执行：
+
+```bash
+readelf -l custom.elf
+```
+
+你应该能看到类似：
+
+```text
+Elf file type is EXEC (Executable file)
+Entry point 0x100000
+
+Program Headers:
+
+  Type           Offset   VirtAddr
+                 PhysAddr FileSiz MemSiz
+                 Flags Align
+
+  LOAD           ...
+                 R E
+                 
+  LOAD           ...
+                 RWX
+```
+
+具体地址可能与你这里不同。
+
+重点看：
+
+```text
+Type
+Flags
+```
+
+---
+
+# 8. Section 和 Segment 的关系
+
+先建立这个模型：
+
+```text
+ELF
+│
+├── Sections
+│
+│   ├── .text
+│   ├── .rodata
+│   ├── .data
+│   ├── .bss
+│   └── ...
+│
+└── Segments
+    │
+    ├── LOAD
+    ├── LOAD
+    ├── INTERP
+    ├── DYNAMIC
+    └── ...
+```
+
+---
+
+# 9. 谁使用 Section？谁使用 Segment？
+
+这是理解 ELF 的关键：
+
+```text
+Section
+   │
+   ▼
+Linker / Compiler / Debugger
+```
+
+而：
+
+```text
+Segment
+   │
+   ▼
+OS Loader
+```
+
+所以：
+
+```text
+Section
+   ↓
+描述“程序由什么组成”
+```
+
+而：
+
+```text
+Segment
+   ↓
+描述“程序运行时应该怎样被加载”
+```
+
+---
+
+# 10. 为什么出现 RWX？
+
+RWX：
+
+```text
+R = Read
+W = Write
+X = Execute
+```
+
+所以：
+
+```text
+RWX
+```
+
+就是：
+
+> 一个 LOAD segment 同时可读、可写、可执行。
+
+现代 Linux 环境通常不希望出现这样的布局。
+
+理想情况下：
+
+```text
+.text
+    ↓
+R-X
+
+.data
+.bss
+    ↓
+RW-
+```
+
+也就是：
+
+```text
+          Permission
+
+.text     R-X
+.rodata   R--
+
+.data     RW-
+.bss      RW-
+```
+
+---
+
+# 11. 为什么我们的实验产生 RWX？
+
+这其实是我们这个实验的 linker script 导致的。
+
+现在：
+
+```ld
+SECTIONS
+{
+    . = 0x100000;
+
+    .text :
+    {
+        *(.text)
+    }
+
+    . = 0x200000;
+
+    .data :
+    {
+        *(.data)
+    }
+
+    .bss :
+    {
+        *(.bss)
+    }
+}
+```
+
+你告诉 linker：
+
+```text
+.text
+.data
+.bss
+```
+
+怎么排列。
+
+但是你**没有告诉 linker 应该怎样创建 Program Header / LOAD Segment**。
+
+于是 linker 根据默认规则进行推导。
+
+最终可能形成：
+
+```text
+LOAD
+│
+├── .text
+├── .data
+└── .bss
+```
+
+于是：
+
+```text
+R + X
++
+R + W
+```
+
+最后可能合并成：
+
+```text
+RWX
+```
+
+于是 warning：
+
+```text
+LOAD segment with RWX permissions
+```
+
+---
+
+# 12. 这其实是一个非常好的学习机会
+
+你现在遇到的两个 warning：
+
+```text
+.note.GNU-stack
+```
+
+和：
+
+```text
+LOAD segment RWX
+```
+
+刚好把我们引向 ELF 的两个层次：
+
+```text
+              ELF
+               │
+       ┌───────┴────────┐
+       │                │
+    Sections         Segments
+       │                │
+       │                │
+  .text/.data       PT_LOAD
+  .bss/.rodata      permissions
+       │                │
+       ▼                ▼
+    Linker           Loader
+```
+
+---
+
+# 13. 现在先不要急着修 RWX
+
+我反而建议：
+
+# ⭐ 暂时保留这个 warning。
+
+因为我们现在正处于：
+
+```text
+实验 02
+```
+
+真正目的就是学习：
+
+```text
+SECTIONS
+```
+
+如果现在直接加入：
+
+```ld
+PHDRS
+```
+
+一下就跨到了：
+
+```text
+Section
+     ↓
+Segment
+     ↓
+Program Header
+```
+
+容易把几个概念混在一起。
+
+---
+
+# 14. 但我们可以先验证它
+
+执行：
+
+```bash
+readelf -l custom.elf
+```
+
+重点找：
+
+```text
+Section to Segment mapping:
+```
+
+可能看到：
+
+```text
+Segment Sections...
+   00
+   01     .text .data .bss
+```
+
+这张表非常重要。
+
+它告诉你：
+
+```text
+Segment #1
+   │
+   ├── .text
+   ├── .data
+   └── .bss
+```
+
+所以：
+
+```text
+多个 Section
+      │
+      ▼
+一个 LOAD Segment
+```
+
+这就是为什么权限会产生冲突。
+
+---
+
+# 15. 用一个图理解
+
+目前你的 ELF 大概是：
+
+```text
+                custom.elf
+                    │
+             Program Headers
+                    │
+                 PT_LOAD
+                    │
+       ┌────────────┼────────────┐
+       │            │            │
+       ▼            ▼            ▼
+     .text        .data         .bss
+       │            │            │
+      R-X          RW-          RW-
+       │            │            │
+       └────────────┼────────────┘
+                    │
+                    ▼
+                  RWX
+```
+
+因为：
+
+```text
+.text → X
+.data → W
+.bss  → W
+```
+
+被放进了同一个：
+
+```text
+PT_LOAD
+```
+
+所以：
+
+```text
+PT_LOAD = RWX
+```
+
+---
+
+# 16. 第一个 warning 应该修掉
+
+最终 `start.S` 推荐：
+
+```asm
+.global _start
+
+_start:
+    call main
+
+    mov %eax, %edi
+
+    mov $60, %eax
+    syscall
+
+
+.section .note.GNU-stack,"",@progbits
+```
+
+然后：
+
+```bash
+rm -f start.o custom.elf custom.map
+
+gcc -c start.S -o start.o
+
+gcc -c main.c -o main.o
+
+ld \
+    -T linker.ld \
+    start.o \
+    main.o \
+    -o custom.elf \
+    -Map=custom.map
+```
+
+此时：
+
+```text
+missing .note.GNU-stack
+```
+
+这个 warning 应该消失。
+
+---
+
+# 17. 第二个 warning 暂时保留
+
+也就是说最终可能：
+
+```text
+ld: warning: custom.elf has a LOAD segment with RWX permissions
+```
+
+但：
+
+```text
+missing .note.GNU-stack
+```
+
+消失。
+
+这不是实验失败。
+
+相反，我们已经获得了一个非常有价值的实验结果：
+
+```text
+Section Layout
+       │
+       ▼
+Program Header Layout
+       │
+       ▼
+LOAD Segment
+       │
+       ▼
+Permissions
+```
+
+---
+
+# 18. 顺便验证一下程序
+
+运行：
+
+```bash
+./custom.elf
+echo $?
+```
+
+应该：
+
+```text
+42
+```
+
+如果得到：
+
+```text
+42
+```
+
+说明：
+
+```text
+_start
+  ↓
+main
+  ↓
+global_data
+  ↓
+global_bss
+  ↓
+return 42
+  ↓
+syscall exit
+```
+
+整个链接流程是工作的。
+
+---
+
+# 19. 一个很重要的纠正
+
+这里我想把上一实验的一个简化说法进一步精确化。
+
+我们之前说：
+
+```text
+.text = 0x100000
+.data = 0x200000
+.bss  = ...
+```
+
+这是：
+
+> **Output Section 的 VMA 布局。**
+
+但最终 ELF 是否把它们放入一个还是多个：
+
+```text
+PT_LOAD
+```
+
+是另外一个层次。
+
+所以以后看到：
+
+```text
+readelf -S
+```
+
+和：
+
+```text
+readelf -l
+```
+
+不要混淆：
+
+```text
+readelf -S
+       │
+       ▼
+Section View
+```
+
+```text
+readelf -l
+       │
+       ▼
+Segment / Program Header View
+```
+
+---
+
+# 🧠 实验 02 到这里应该形成的完整脑图
+
+```text
+                         ELF
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+          Sections                 Segments
+              │                       │
+              │                       │
+       ┌──────┼──────┐              PT_LOAD
+       │      │      │                 │
+     .text  .data  .bss                │
+       │      │      │                 │
+       │      │      │                 │
+      R-X    RW-    RW-                │
+       │      │      │                 │
+       └──────┼──────┘                 │
+              │                        │
+              └────────────┬───────────┘
+                           │
+                    Segment Mapping
+                           │
+                           ▼
+                     Permissions
+                           │
+                           ▼
+                         RWX
+```
+
+同时：
+
+```text
+start.S
+   │
+   ▼
+.note.GNU-stack
+   │
+   ▼
+告诉 linker
+“我不需要 executable stack”
+```
+
+---
+
+# 🔥 下一步：实验 03 就该进入真正的 VMA/LMA
+
+你现在已经具备进入下一阶段的基础。
+
+下一实验我们不再只是：
+
+```text
+.text
+.data
+.bss
+```
+
+而是做一个真正的：
+
+```text
+             ROM / FLASH
+          0x08000000
+               │
+               ├── .text
+               ├── .rodata
+               │
+               └── .data 初始值
+                       │
+                       │ LMA
+                       │
+                       ▼
+             RAM
+          0x20000000
+               │
+               ├── .data
+               │
+               └── .bss
+```
+
+然后正式引入：
+
+```ld
+AT > ROM
+```
+
+以及：
+
+```ld
+LOADADDR(.data)
+ADDR(.data)
+SIZEOF(.data)
+```
+
+最终写出真正的启动代码：
+
+```asm
+/* copy .data */
+memcpy(
+    VMA(.data),
+    LMA(.data),
+    SIZEOF(.data)
+);
+
+/* clear .bss */
+memset(
+    VMA(.bss),
+    0,
+    SIZEOF(.bss)
+);
+```
+
+这一步会把你之前研究的 **`.data` 从 ROM 搬到 RAM**，和我们现在学到的 **Section / Segment / Linker Script / Symbol** 全部串起来。
+
