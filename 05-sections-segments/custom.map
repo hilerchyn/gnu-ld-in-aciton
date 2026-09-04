@@ -1,0 +1,79 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and start.o (not found)
+
+Discarded input sections
+
+ .note.gnu.property
+                0x0000000000000000       0x20 main.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000400000                . = 0x400000
+
+.text           0x0000000000400000       0x2d
+                0x0000000000400000                _stext = .
+ *(.text)
+ .text          0x0000000000400000        0xe start.o
+                0x0000000000400000                _start
+ .text          0x000000000040000e       0x1f main.o
+                0x000000000040000e                main
+                0x000000000040002d                _etext = .
+
+.iplt           0x000000000040002d        0x0
+ .iplt          0x000000000040002d        0x0 start.o
+
+.rela.dyn       0x0000000000400030        0x0
+ .rela.got      0x0000000000400030        0x0 start.o
+ .rela.iplt     0x0000000000400030        0x0 start.o
+
+.rodata
+ *(.rodata)
+                0x0000000000600000                . = 0x600000
+
+.data           0x0000000000600000        0x4
+                0x0000000000600000                _sdata = .
+ *(.data)
+ .data          0x0000000000600000        0x0 start.o
+ .data          0x0000000000600000        0x4 main.o
+                0x0000000000600000                global_data
+                0x0000000000600004                _edata = .
+
+.got            0x0000000000600008        0x0
+ .got           0x0000000000600008        0x0 start.o
+
+.got.plt        0x0000000000600008        0x0
+ .got.plt       0x0000000000600008        0x0 start.o
+
+.igot.plt       0x0000000000600008        0x0
+ .igot.plt      0x0000000000600008        0x0 start.o
+
+.bss            0x0000000000600004        0x4
+                0x0000000000600004                _sbss = .
+ *(.bss)
+ .bss           0x0000000000600004        0x0 start.o
+ .bss           0x0000000000600004        0x4 main.o
+                0x0000000000600004                global_bss
+ *(COMMON)
+                0x0000000000600008                _ebss = .
+                0x0000000000600000                _sidata = LOADADDR (.data)
+LOAD start.o
+LOAD main.o
+OUTPUT(custom.elf elf64-x86-64)
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 start.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)
