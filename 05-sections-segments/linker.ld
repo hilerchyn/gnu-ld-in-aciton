@@ -8,19 +8,22 @@ MEMORY
 
 SECTIONS
 {
-    .text ALIGN(16) :
+    .text :
+        ALIGN(16) 
     {
         _stext = .;
         *(.text)
         _etext = .;
     } > ROM
 
-    .rodata ALIGN(8) :
+    .rodata :
+        ALIGN(8) 
     {
         *(.rodata)
     } > ROM
 
-    .data ALIGN(8) :
+    .data :
+        ALIGN(8) 
     {
         _sdata = .;
         *(.data)
@@ -29,7 +32,8 @@ SECTIONS
 
     _sidata = LOADADDR(.data);
 
-    .bss ALIGN(8) :
+    .bss :
+        ALIGN(8) 
     {
         _sbss = .;
         *(.bss)

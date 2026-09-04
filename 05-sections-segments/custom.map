@@ -11,11 +11,12 @@ Discarded input sections
 Memory Configuration
 
 Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+RAM              0x0000000000600000 0x0000000000010000 xrw
 *default*        0x0000000000000000 0xffffffffffffffff
 
 Linker script and memory map
 
-                0x0000000000400000                . = 0x400000
 
 .text           0x0000000000400000       0x2d
                 0x0000000000400000                _stext = .
@@ -35,34 +36,33 @@ Linker script and memory map
 
 .rodata
  *(.rodata)
-                0x0000000000600000                . = 0x600000
 
-.data           0x0000000000600000        0x4
+.data           0x0000000000600000        0x4 load address 0x0000000000400030
                 0x0000000000600000                _sdata = .
  *(.data)
  .data          0x0000000000600000        0x0 start.o
  .data          0x0000000000600000        0x4 main.o
                 0x0000000000600000                global_data
                 0x0000000000600004                _edata = .
+                0x0000000000400030                _sidata = LOADADDR (.data)
 
-.got            0x0000000000600008        0x0
+.got            0x0000000000600008        0x0 load address 0x0000000000400034
  .got           0x0000000000600008        0x0 start.o
 
-.got.plt        0x0000000000600008        0x0
+.got.plt        0x0000000000600008        0x0 load address 0x0000000000400034
  .got.plt       0x0000000000600008        0x0 start.o
 
-.igot.plt       0x0000000000600008        0x0
+.igot.plt       0x0000000000600008        0x0 load address 0x0000000000400034
  .igot.plt      0x0000000000600008        0x0 start.o
 
-.bss            0x0000000000600004        0x4
-                0x0000000000600004                _sbss = .
+.bss            0x0000000000600008        0x4 load address 0x0000000000400038
+                0x0000000000600008                _sbss = .
  *(.bss)
- .bss           0x0000000000600004        0x0 start.o
- .bss           0x0000000000600004        0x4 main.o
-                0x0000000000600004                global_bss
+ .bss           0x0000000000600008        0x0 start.o
+ .bss           0x0000000000600008        0x4 main.o
+                0x0000000000600008                global_bss
  *(COMMON)
-                0x0000000000600008                _ebss = .
-                0x0000000000600000                _sidata = LOADADDR (.data)
+                0x000000000060000c                _ebss = .
 LOAD start.o
 LOAD main.o
 OUTPUT(custom.elf elf64-x86-64)
