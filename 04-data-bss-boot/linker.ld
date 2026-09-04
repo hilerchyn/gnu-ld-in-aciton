@@ -43,4 +43,3 @@ SECTIONS
         _ebss = .;
     } > RAM
 }
-
