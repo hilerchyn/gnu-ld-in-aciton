@@ -2,8 +2,8 @@ ENTRY(_start)
 
 MEMORY
 {
-    ROM (rx)  : ORIGIN = 0x00400000, LENGTH = 64K
-    RAM (rwx) : ORIGIN = 0x00600000, LENGTH = 64K
+    ROM (rx) : ORIGIN = 0x00400000, LENGTH = 64K
+    RAM (rw) : ORIGIN = 0x00600000, LENGTH = 64K
 }
 
 PHDRS
@@ -15,35 +15,35 @@ PHDRS
 SECTIONS
 {
     .text :
-        ALIGN(16) 
     {
         _stext = .;
+
         *(.text)
+
         _etext = .;
     } > ROM :text
 
     .rodata :
-        ALIGN(8) 
     {
         *(.rodata)
     } > ROM :text
 
     .data :
-        ALIGN(8) 
     {
         _sdata = .;
+
         *(.data)
+
         _edata = .;
     } > RAM AT > ROM :data
 
-    _sidata = LOADADDR(.data);
-
     .bss :
-        ALIGN(8) 
     {
         _sbss = .;
+
         *(.bss)
         *(COMMON)
+
         _ebss = .;
     } > RAM :data
 }
