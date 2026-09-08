@@ -1,0 +1,91 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and start.o (not found)
+Removed property 0xc0000002 to merge main.o (not found) and commands.o (0x3)
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 start.o
+ .bss           0x0000000000000000        0x0 start.o
+ .text          0x0000000000000000        0x0 main.o
+ .data          0x0000000000000000        0x0 main.o
+ .bss           0x0000000000000000        0x0 main.o
+ .text.unused_function
+                0x0000000000000000        0xf main.o
+ .note.gnu.property
+                0x0000000000000000       0x20 main.o
+ .eh_frame      0x0000000000000000       0x78 main.o
+ .text          0x0000000000000000        0x0 commands.o
+ .data          0x0000000000000000        0x0 commands.o
+ .bss           0x0000000000000000        0x0 commands.o
+ .note.gnu.property
+                0x0000000000000000       0x20 commands.o
+ .eh_frame      0x0000000000000000       0x38 commands.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+
+.text           0x0000000000400000       0x3e
+                0x0000000000400000                _stext = .
+ *(.text)
+ .text          0x0000000000400000        0xe start.o
+                0x0000000000400000                _start
+ *(.text.*)
+ .text.used_function
+                0x000000000040000e        0xf main.o
+ .text.main     0x000000000040001d       0x12 main.o
+                0x000000000040001d                main
+ .text.command_hello
+                0x000000000040002f        0xf commands.o
+                0x000000000040003e                _etext = .
+
+.rodata         0x000000000040003e        0x6
+ .rodata        0x000000000040003e        0x6 commands.o
+
+.iplt           0x0000000000400044        0x0
+ .iplt          0x0000000000400044        0x0 start.o
+
+.rela.dyn       0x0000000000400048        0x0
+ .rela.got      0x0000000000400048        0x0 start.o
+ .rela.iplt     0x0000000000400048        0x0 start.o
+
+.command_table  0x0000000000400050       0x10
+                0x0000000000400050                command_start = .
+ *(.command_table)
+ .command_table
+                0x0000000000400050       0x10 commands.o
+                0x0000000000400060                command_end = .
+LOAD start.o
+LOAD main.o
+LOAD commands.o
+OUTPUT(command-keep.elf elf64-x86-64)
+
+.got            0x0000000000400060        0x0
+ .got           0x0000000000400060        0x0 start.o
+
+.got.plt        0x0000000000400060        0x0
+ .got.plt       0x0000000000400060        0x0 start.o
+
+.igot.plt       0x0000000000400060        0x0
+ .igot.plt      0x0000000000400060        0x0 start.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 start.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 commands.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)
+ .comment       0x000000000000002d       0x2e commands.o
