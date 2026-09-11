@@ -11,3 +11,5 @@ _start:
 
 .section .note.GNU-stack,"",@progbits
 
+#.section .special
+
