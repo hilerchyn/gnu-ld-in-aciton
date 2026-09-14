@@ -41,4 +41,19 @@ SECTIONS
 		_edata = .;
 	} > RAM AT > ROM :data
 
+	_data_load = LOADADDR(.data);
+	_data_size = SIZEOF(.data);
+
+	.bss :
+	{
+		_sbss = .;
+
+		*(.bss)
+		*(.bss.*)
+
+		_ebss = .;
+	} > ROM :text
+
+	_data_vma = ADDR(.data);
+	_data_lma = LOADADDR(.data);
 }
