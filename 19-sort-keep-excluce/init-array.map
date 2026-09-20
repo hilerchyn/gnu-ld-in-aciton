@@ -1,0 +1,127 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and start.o (not found)
+Removed property 0xc0000002 to merge main.o (not found) and foo.o (0x3)
+Removed property 0xc0000002 to merge main.o (not found) and init_a.o (0x3)
+Removed property 0xc0000002 to merge main.o (not found) and init_b.o (0x3)
+Removed property 0xc0000002 to merge main.o (not found) and init_c.o (0x3)
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 start.o
+ .bss           0x0000000000000000        0x0 start.o
+ .text          0x0000000000000000        0x0 main.o
+ .data          0x0000000000000000        0x0 main.o
+ .bss           0x0000000000000000        0x0 main.o
+ .note.gnu.property
+                0x0000000000000000       0x20 main.o
+ .eh_frame      0x0000000000000000       0x38 main.o
+ .text          0x0000000000000000        0x0 foo.o
+ .data          0x0000000000000000        0x0 foo.o
+ .bss           0x0000000000000000        0x0 foo.o
+ .note.gnu.property
+                0x0000000000000000       0x20 foo.o
+ .eh_frame      0x0000000000000000       0x38 foo.o
+ .text          0x0000000000000000        0x0 init_a.o
+ .data          0x0000000000000000        0x0 init_a.o
+ .bss           0x0000000000000000        0x0 init_a.o
+ .note.gnu.property
+                0x0000000000000000       0x20 init_a.o
+ .eh_frame      0x0000000000000000       0x38 init_a.o
+ .text          0x0000000000000000        0x0 init_b.o
+ .data          0x0000000000000000        0x0 init_b.o
+ .bss           0x0000000000000000        0x0 init_b.o
+ .note.gnu.property
+                0x0000000000000000       0x20 init_b.o
+ .eh_frame      0x0000000000000000       0x38 init_b.o
+ .text          0x0000000000000000        0x0 init_c.o
+ .data          0x0000000000000000        0x0 init_c.o
+ .bss           0x0000000000000000        0x0 init_c.o
+ .note.gnu.property
+                0x0000000000000000       0x20 init_c.o
+ .eh_frame      0x0000000000000000       0x38 init_c.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+
+.text           0x0000000000400000       0x4e
+ *(.text.*)
+ .text.main     0x0000000000400000       0x14 main.o
+                0x0000000000400000                main
+ .text.300      0x0000000000400014        0xb foo.o
+                0x0000000000400014                foo
+ .text.init_a   0x000000000040001f        0xb init_a.o
+                0x000000000040001f                init_a
+ .text.init_b   0x000000000040002a        0xb init_b.o
+                0x000000000040002a                init_b
+ .text.init_c   0x0000000000400035        0xb init_c.o
+                0x0000000000400035                init_c
+ *(.text)
+ .text          0x0000000000400040        0xe start.o
+                0x0000000000400040                _start
+
+.iplt           0x000000000040004e        0x0
+ .iplt          0x000000000040004e        0x0 start.o
+
+.got            0x0000000000400050        0x0
+ .got           0x0000000000400050        0x0 start.o
+
+.got.plt        0x0000000000400050        0x0
+ .got.plt       0x0000000000400050        0x0 start.o
+
+.igot.plt       0x0000000000400050        0x0
+ .igot.plt      0x0000000000400050        0x0 start.o
+
+.rela.dyn       0x0000000000400050        0x0
+ .rela.got      0x0000000000400050        0x0 start.o
+ .rela.iplt     0x0000000000400050        0x0 start.o
+
+.init_array     0x0000000000400050       0x18
+ *(SORT_BY_NAME(.init_array.*))
+ .init_array.100
+                0x0000000000400050        0x8 init_b.o
+                0x0000000000400050                init_b_entry
+ .init_array.200
+                0x0000000000400058        0x8 init_c.o
+                0x0000000000400058                init_c_entry
+ .init_array.300
+                0x0000000000400060        0x8 init_a.o
+                0x0000000000400060                init_a_entry
+ *(.init_array)
+LOAD start.o
+LOAD main.o
+LOAD foo.o
+LOAD init_a.o
+LOAD init_b.o
+LOAD init_c.o
+OUTPUT(init-array.elf elf64-x86-64)
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 start.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 foo.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 init_a.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 init_b.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 init_c.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)
+ .comment       0x000000000000002d       0x2e foo.o
+ .comment       0x000000000000002d       0x2e init_a.o
+ .comment       0x000000000000002d       0x2e init_b.o
+ .comment       0x000000000000002d       0x2e init_c.o
