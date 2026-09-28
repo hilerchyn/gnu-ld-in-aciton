@@ -1,0 +1,102 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and start.o (not found)
+Removed property 0xc0000002 to merge main.o (not found) and data.o (0x3)
+
+Discarded input sections
+
+ .note.gnu.property
+                0x0000000000000000       0x20 main.o
+ .note.gnu.property
+                0x0000000000000000       0x20 data.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+
+.text           0x0000000000400000       0x3a
+ *(.text)
+ .text          0x0000000000400000        0x8 start.o
+                0x0000000000400000                _start
+ .text          0x0000000000400008        0x0 main.o
+ .text          0x0000000000400008        0x0 data.o
+ *(.text.*)
+ .text.main     0x0000000000400008       0x32 main.o
+                0x0000000000400008                main
+
+.iplt           0x000000000040003a        0x0
+ .iplt          0x000000000040003a        0x0 start.o
+
+.rodata         0x0000000000400040        0xb
+ *(.rodata)
+ *(.rodata.*)
+ .rodata.version
+                0x0000000000400040        0xb data.o
+                0x0000000000400040                version
+LOAD start.o
+LOAD main.o
+LOAD data.o
+OUTPUT(align0.elf elf64-x86-64)
+
+.eh_frame       0x0000000000400050       0x38
+ .eh_frame      0x0000000000400050       0x38 main.o
+
+.firmware_header
+                0x0000000000400088        0x8
+ .firmware_header
+                0x0000000000400088        0x8 data.o
+                0x0000000000400088                firmware_magic
+                0x000000000040008c                firmware_version
+
+.rela.dyn       0x0000000000400090        0x0
+ .rela.got      0x0000000000400090        0x0 start.o
+ .rela.iplt     0x0000000000400090        0x0 start.o
+
+.data           0x0000000000400090        0x0
+ .data          0x0000000000400090        0x0 start.o
+ .data          0x0000000000400090        0x0 main.o
+ .data          0x0000000000400090        0x0 data.o
+
+.got            0x0000000000400090        0x0
+ .got           0x0000000000400090        0x0 start.o
+
+.got.plt        0x0000000000400090        0x0
+ .got.plt       0x0000000000400090        0x0 start.o
+
+.igot.plt       0x0000000000400090        0x0
+ .igot.plt      0x0000000000400090        0x0 start.o
+
+.data.counter   0x0000000000400090        0x4
+ .data.counter  0x0000000000400090        0x4 data.o
+                0x0000000000400090                counter
+
+.data.magic     0x0000000000400094        0x4
+ .data.magic    0x0000000000400094        0x4 data.o
+                0x0000000000400094                magic
+
+.data.message   0x0000000000400098        0xe
+ .data.message  0x0000000000400098        0xe data.o
+                0x0000000000400098                message
+
+.bss            0x00000000004000a6        0x0
+ .bss           0x00000000004000a6        0x0 start.o
+ .bss           0x00000000004000a6        0x0 main.o
+ .bss           0x00000000004000a6        0x0 data.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)
+ .comment       0x000000000000002d       0x2e data.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 data.o
