@@ -1,0 +1,73 @@
+ENTRY(_start)
+
+MEMORY
+{
+	ROM (rx) : ORIGIN = 0x00400000, LENGTH = 64K
+	RAM (rw) : ORIGIN = 0x00600000, LENGTH = 64K
+}
+
+PHDRS
+{
+	text PT_LOAD FILEHDR PHDRS FLAGS(5);
+	data PT_LOAD               FLAGS(6);
+}
+
+SECTIONS
+{
+	. = SIZEOF_HEADERS;
+
+	.text :
+	{
+		_stext = .;
+
+		*(.text)
+		*(.text.*)
+
+		_etext = .;
+	} > ROM : text
+
+	.rodata :
+	{
+		_srodata = .;
+
+		*(.rodata)
+		*(.rodata.*)
+
+		_erodata = .;
+	} > ROM : text
+
+	.data :
+	{
+		__data_start = .;
+
+		*(.data)
+		*(.data.*)
+
+		__data_end = .;
+	} > RAM AT > ROM :data
+
+	__data_load_start = LOADADDR(.data);
+	__data_size = SIZEOF(.data);
+
+	.bss :
+	{
+		__bss_start = .;
+
+		*(.bss)
+		*(.bss.*)
+		*(COMMON)
+
+		__bss_end = .;
+	} > RAM :data
+
+	__bss_zize = SIZEOF(.bss);
+
+	. = ALIGN(16);
+
+	__heap_start = .;
+
+	__ram_start = ORIGIN(RAM);
+	__ram_end   = ORIGIN(RAM) + LENGTH(RAM);
+	__stack_top = __ram_end;
+
+}
