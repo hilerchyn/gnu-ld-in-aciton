@@ -1,0 +1,118 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and start.o (not found)
+Removed property 0xc0000002 to merge main.o (not found) and functions.o (0x3)
+Removed property 0xc0000002 to merge main.o (not found) and data.o (0x3)
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 start.o
+ .bss           0x0000000000000000        0x0 start.o
+ .text          0x0000000000000000        0x0 main.o
+ .data          0x0000000000000000        0x0 main.o
+ .bss           0x0000000000000000        0x0 main.o
+ .note.gnu.property
+                0x0000000000000000       0x20 main.o
+ .eh_frame      0x0000000000000000       0x38 main.o
+ .text          0x0000000000000000        0x0 functions.o
+ .data          0x0000000000000000        0x0 functions.o
+ .bss           0x0000000000000000        0x0 functions.o
+ .text.unused_function
+                0x0000000000000000        0xf functions.o
+ .note.gnu.property
+                0x0000000000000000       0x20 functions.o
+ .eh_frame      0x0000000000000000       0x58 functions.o
+ .text          0x0000000000000000        0x0 data.o
+ .data          0x0000000000000000        0x0 data.o
+ .bss           0x0000000000000000        0x0 data.o
+ .data.unused_data
+                0x0000000000000000        0x4 data.o
+ .factory_data  0x0000000000000000        0x8 data.o
+ .note.gnu.property
+                0x0000000000000000       0x20 data.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+RAM              0x0000000000600000 0x0000000000010000 rw
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+
+.text           0x0000000000400000       0x35
+ *(.text)
+ .text          0x0000000000400000        0x8 start.o
+                0x0000000000400000                _start
+ *(.text.*)
+ .text.main     0x0000000000400008       0x1e main.o
+                0x0000000000400008                main
+ .text.used_function
+                0x0000000000400026        0xf functions.o
+                0x0000000000400026                used_function
+
+.iplt           0x0000000000400035        0x0
+ .iplt          0x0000000000400035        0x0 start.o
+
+.rodata
+ *(.rodata)
+ *(.rodata.*)
+
+.factory_data
+ *(.factory_data)
+
+.firmware_header
+                0x0000000000400038        0x4
+                0x0000000000400038                __firmware_header_start = .
+ *(.firmware_header)
+ .firmware_header
+                0x0000000000400038        0x4 data.o
+                0x0000000000400038                firmware_magic
+                0x000000000040003c                __firmware_header_end = .
+
+.rela.dyn       0x0000000000400040        0x0
+ .rela.got      0x0000000000400040        0x0 start.o
+ .rela.iplt     0x0000000000400040        0x0 start.o
+
+.data           0x0000000000600000        0x4
+ *(.data)
+ *(.data.*)
+ .data.used_data
+                0x0000000000600000        0x4 data.o
+                0x0000000000600000                used_data
+
+.got            0x0000000000600008        0x0
+ .got           0x0000000000600008        0x0 start.o
+
+.got.plt        0x0000000000600008        0x0
+ .got.plt       0x0000000000600008        0x0 start.o
+
+.igot.plt       0x0000000000600008        0x0
+ .igot.plt      0x0000000000600008        0x0 start.o
+
+.bss
+ *(.bss)
+ *(.bss.*)
+ *(COMMON)
+LOAD start.o
+LOAD main.o
+LOAD functions.o
+LOAD data.o
+OUTPUT(keep.elf elf64-x86-64)
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d main.o
+                                         0x2e (size before relaxing)
+ .comment       0x000000000000002d       0x2e functions.o
+ .comment       0x000000000000002d       0x2e data.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 functions.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 data.o
