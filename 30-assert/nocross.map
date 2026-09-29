@@ -1,0 +1,88 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge boot.o (0x3) and start.o (not found)
+Removed property 0xc0000002 to merge boot.o (not found) and app_lab4.o (0x3)
+
+Discarded input sections
+
+ .note.gnu.property
+                0x0000000000000000       0x20 boot.o
+ .note.gnu.property
+                0x0000000000000000       0x20 app_lab4.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ROM              0x0000000000400000 0x0000000000010000 xr
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+
+.text           0x0000000000400000        0x8
+ *(.text)
+ .text          0x0000000000400000        0x8 start.o
+                0x0000000000400000                _start
+ .text          0x0000000000400008        0x0 boot.o
+ .text          0x0000000000400008        0x0 app_lab4.o
+ *(.text.*)
+
+.iplt           0x0000000000400008        0x0
+ .iplt          0x0000000000400008        0x0 start.o
+
+.boot           0x0000000000400008       0x1e
+ *(.boot)
+ .boot          0x0000000000400008       0x1e boot.o
+                0x0000000000400008                boot_log
+                0x0000000000400017                boot_init
+
+.app            0x0000000000400026       0x1e
+ *(.app)
+ .app           0x0000000000400026       0x1e app_lab4.o
+                0x0000000000400026                app_task
+                0x0000000000400035                app_main
+LOAD start.o
+LOAD boot.o
+LOAD app_lab4.o
+OUTPUT(nocross.elf elf64-x86-64)
+
+.eh_frame       0x0000000000400048       0x98
+ .eh_frame      0x0000000000400048       0x58 boot.o
+ .eh_frame      0x00000000004000a0       0x40 app_lab4.o
+                                         0x58 (size before relaxing)
+
+.rela.dyn       0x00000000004000e0        0x0
+ .rela.got      0x00000000004000e0        0x0 start.o
+ .rela.iplt     0x00000000004000e0        0x0 start.o
+
+.data           0x00000000004000e0        0x0
+ .data          0x00000000004000e0        0x0 start.o
+ .data          0x00000000004000e0        0x0 boot.o
+ .data          0x00000000004000e0        0x0 app_lab4.o
+
+.got            0x00000000004000e0        0x0
+ .got           0x00000000004000e0        0x0 start.o
+
+.got.plt        0x00000000004000e0        0x0
+ .got.plt       0x00000000004000e0        0x0 start.o
+
+.igot.plt       0x00000000004000e0        0x0
+ .igot.plt      0x00000000004000e0        0x0 start.o
+
+.bss            0x00000000004000e0        0x0
+ .bss           0x00000000004000e0        0x0 start.o
+ .bss           0x00000000004000e0        0x0 boot.o
+ .bss           0x00000000004000e0        0x0 app_lab4.o
+
+.comment        0x0000000000000000       0x2d
+ .comment       0x0000000000000000       0x2d boot.o
+                                         0x2e (size before relaxing)
+ .comment       0x000000000000002d       0x2e app_lab4.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 boot.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 app_lab4.o
