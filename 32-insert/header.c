@@ -1,0 +1,10 @@
+#include <stdint.h>
+
+__attribute__((section(".firmware_header")))
+const uint8_t firmware_header[] = 
+{
+    0x46, 0x57, 0x48, 0x44,   /* FWHD */
+    0x01, 0x00, 0x00, 0x00,   /* version */
+    0x12, 0x34, 0x56, 0x78
+};
+
